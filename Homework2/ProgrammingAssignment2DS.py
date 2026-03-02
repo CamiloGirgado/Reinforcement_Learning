@@ -199,7 +199,7 @@ if __name__ == "__main__":
     plt.xlabel('Episode')
     plt.ylabel('Sum of rewards per episode')
     plt.legend()
-    plt.title('Cliff Walking: SARSA vs Q‑learning (ε = 0.1)')
+    plt.title('Cliff Walking: SARSA vs Q-learning (ε = 0.1)')
     plt.grid(True)
     plt.show()
 
@@ -207,22 +207,22 @@ if __name__ == "__main__":
     policy_sarsa = extract_policy(Q_sarsa)
     policy_q = extract_policy(Q_q)
     plot_path(policy_sarsa, 'SARSA greedy path (safe)')
-    plot_path(policy_q, 'Q‑learning greedy path (optimal)')
+    plot_path(policy_q, 'Q-learning greedy path (optimal)')
 
     # ---------- Part 2: With epsilon decay ----------
     print("\nRunning SARSA with ε decay ...")
     Q_sarsa_dec, rewards_sarsa_dec = sarsa(episodes, epsilon=0.1, decay=True)
-    print("Running Q‑learning with ε decay ...")
+    print("Running Q-learning with ε decay ...")
     Q_q_dec, rewards_q_dec = q_learning(episodes, epsilon=0.1, decay=True)
 
     # Plot learning curves with decay
     plt.figure(figsize=(10, 5))
     plt.plot(rewards_sarsa_dec, label='SARSA (decay)', alpha=0.7)
-    plt.plot(rewards_q_dec, label='Q‑learning (decay)', alpha=0.7)
+    plt.plot(rewards_q_dec, label='Q-learning (decay)', alpha=0.7)
     plt.xlabel('Episode')
     plt.ylabel('Sum of rewards per episode')
     plt.legend()
-    plt.title('Cliff Walking: SARSA vs Q‑learning (ε decays from 0.1 to 0.01)')
+    plt.title('Cliff Walking: SARSA vs Q-learning (ε decays from 0.1 to 0.01)')
     plt.grid(True)
     plt.show()
 
