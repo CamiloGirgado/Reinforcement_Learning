@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-# ─── Environment ──────────────────────────────────────────────────────────────
+# Environment
 ROWS, COLS = 4, 12
 START = (3, 0)
 GOAL  = (3, 11)
@@ -69,7 +69,7 @@ def train(episodes, alpha, eps_schedule, method):
         rewards.append(run_episode(Q, alpha, eps, method))
     return Q, np.array(rewards)
 
-# ─── Draw Grid ────────────────────────────────────────────────────────────────
+# Draw Grid
 def draw_grid(ax, sarsa_path, q_path, title):
     ax.set_xlim(0, COLS)
     ax.set_ylim(0, ROWS)
@@ -121,7 +121,7 @@ def draw_grid(ax, sarsa_path, q_path, title):
     ax.set_yticks([])
 
 
-# ─── Main ─────────────────────────────────────────────────────────────────────
+# Main
 def main():
     EPISODES = 500
     ALPHA    = 0.5
@@ -132,8 +132,8 @@ def main():
     fig.suptitle('Cliff Walking: SARSA vs Q-Learning', fontsize=14,
                  color='white', y=0.98)
 
-    # ── Part 1 & 2: Fixed epsilon ─────────────────────────────────────────────
-    print("Training with fixed ε = 0.1 ...")
+    # Part 1 & 2: Fixed epsilon
+    print("Training with fixed ε = 0.1")
     fixed_eps = lambda ep: EPS
 
     Qs_fixed, sr_fixed = train(EPISODES, ALPHA, fixed_eps, "sarsa")
@@ -147,8 +147,8 @@ def main():
     print(f"  SARSA avg reward (last 50):     {sr_fixed[-50:].mean():.1f}")
     print(f"  Q-learning avg reward (last 50):{qr_fixed[-50:].mean():.1f}")
 
-    # ── Part 3: Decaying epsilon ──────────────────────────────────────────────
-    print("\nTraining with decaying ε (×0.99 per episode) ...")
+    # Part 3: Decaying epsilon 
+    print("\nTraining with decaying ε (x0.99 per episode)")
     decay_eps = lambda ep: max(0.01, EPS * (0.99 ** ep))
 
     Qs_decay, sr_decay = train(EPISODES, ALPHA, decay_eps, "sarsa")
@@ -162,7 +162,7 @@ def main():
     print(f"  SARSA avg reward (last 50):     {sr_decay[-50:].mean():.1f}")
     print(f"  Q-learning avg reward (last 50):{qr_decay[-50:].mean():.1f}")
 
-    # ── Plots ─────────────────────────────────────────────────────────────────
+    # Plots 
     gs = fig.add_gridspec(3, 2, hspace=0.45, wspace=0.25,
                           left=0.07, right=0.97, top=0.93, bottom=0.06)
 
@@ -179,7 +179,7 @@ def main():
     ep_x = np.arange(EPISODES)
     ax_r1.plot(ep_x, smooth(sr_fixed), color='#4dc8ff', lw=1.8, label='SARSA')
     ax_r1.plot(ep_x, smooth(qr_fixed), color='#ff4d4d', lw=1.8, label='Q-learning')
-    ax_r1.axhline(y=-13, color='#aabb44', lw=1, ls='--', alpha=0.6, label='Optimal (−13)')
+    ax_r1.axhline(y=-13, color='#aabb44', lw=1, ls='--', alpha=0.6, label='Optimal')
     ax_r1.set_title(f'Sum of Rewards per Episode — Fixed ε={EPS}  (smoothed)',
                     color='white', fontsize=10)
     ax_r1.set_xlabel('Episodes', color='#aaa')
@@ -194,7 +194,7 @@ def main():
     ax_r2 = fig.add_subplot(gs[2, :])
     ax_r2.plot(ep_x, smooth(sr_decay), color='#4dc8ff', lw=1.8, label='SARSA')
     ax_r2.plot(ep_x, smooth(qr_decay), color='#ff4d4d', lw=1.8, label='Q-learning')
-    ax_r2.axhline(y=-13, color='#aabb44', lw=1, ls='--', alpha=0.6, label='Optimal (−13)')
+    ax_r2.axhline(y=-13, color='#aabb44', lw=1, ls='--', alpha=0.6, label='Optimal')
     ax_r2.set_title('Sum of Rewards per Episode — Decaying ε  (smoothed)',
                     color='white', fontsize=10)
     ax_r2.set_xlabel('Episodes', color='#aaa')
