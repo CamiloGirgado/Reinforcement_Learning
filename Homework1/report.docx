@@ -1,0 +1,42 @@
+# Report on ProgrammingAssignment1.py: Dynamic Programming for MDP Solving
+
+## Assignment Overview
+This assignment implements dynamic programming algorithms to solve a Markov Decision Process (MDP) in a grid-based navigation environment. The goal is to find an optimal policy that maximizes cumulative rewards while avoiding obstacles and reaching a target goal state.
+
+## Environment Description
+- **Grid World**: A 15x51 grid with walls (obstacles) and open spaces.
+- **States**: Positions (row, col) in the grid; terminal state at the goal (row 8, col 11).
+- **Actions**: 8 possible directions (N, NE, E, SE, S, SW, W, NW).
+- **Rewards**:
+  - Goal: +100
+  - Obstacle collision: -50
+  - Step: -1
+- **Discount Factor (γ)**: 0.95
+- **Models**:
+  - **Deterministic**: Actions move exactly as intended.
+  - **Stochastic**: 80% intended direction, 10% each to adjacent directions (±45°).
+
+## Algorithms Implemented
+1. **Value Iteration**:
+   - Iteratively updates the value function `V(s)` by maximizing over actions: `V(s) ← max_a ∑ p(s', r | s, a) * (r + γ V(s'))`.
+   - Extracts policy greedily after convergence.
+   - Converges in ~39 iterations (deterministic) and ~50 (stochastic).
+
+2. **Policy Iteration**:
+   - **Policy Evaluation**: For a fixed policy, iteratively solves `V(s) = ∑ p(s', r | s, π(s)) * (r + γ V(s'))` until convergence.
+   - **Policy Improvement**: Updates policy to `π(s) ← argmax_a ∑ p(s', r | s, a) * (r + γ V(s'))`.
+   - Repeats until policy stabilizes.
+   - Typically requires more evaluations but can be more efficient in structured MDPs.
+
+## Implementation Details
+- **Code Structure**: Modular functions for transitions, value/policy updates, and plotting.
+- **Convergence**: Uses a threshold of 1e-4 for delta in value updates.
+- **Visualization**: Heatmaps for value functions and arrow plots for policies using Matplotlib.
+
+## Results and Observations
+- Both algorithms yield identical optimal policies and value functions.
+- Value Iteration is faster in total iterations; Policy Iteration provides clearer separation of evaluation and improvement phases.
+- Stochastic model leads to more conservative policies due to action uncertainty.
+- The environment's layout (corridors and obstacles) influences convergence speed and policy paths.
+
+This implementation demonstrates core reinforcement learning concepts, allowing comparison of dynamic programming approaches in a practical setting.
