@@ -77,6 +77,43 @@ def value_iteration(stochastic=False):
             policy[r,c] = np.argmax(v_actions)
     return V, policy, iters
 
+def policy_evaluation(policy, V, stochastic, theta=1e-4):
+    iters = 0
+    while True:
+        delta = 0
+        new_V = np.copy(V)
+        for r in range(W.shape[0]):
+            for c in range(W.shape[1]):
+                if (r,c) == GOAL or W[r,c] == 1: continue
+                a_idx = policy[r,c]
+                v_sum = sum(p * (rew + GAMMA * V[ns]) for p, ns, rew in get_transitions((r,c), a_idx, stochastic))
+                new_V[r,c] = v_sum
+                delta = max(delta, abs(new_V[r,c] - V[r,c]))
+        V = new_V
+        iters += 1
+        if delta < theta: break
+    return V, iters
+
+def policy_iteration(stochastic=False, theta=1e-4):
+    V = np.zeros(W.shape)
+    policy = np.zeros(W.shape, dtype=int)
+    total_iters = 0
+    while True:
+        V, eval_iters = policy_evaluation(policy, V, stochastic, theta)
+        total_iters += eval_iters
+        new_policy = np.zeros(W.shape, dtype=int)
+        stable = True
+        for r in range(W.shape[0]):
+            for c in range(W.shape[1]):
+                if W[r,c] == 1 or (r,c) == GOAL: continue
+                v_actions = [sum(p * (rew + GAMMA * V[ns]) for p, ns, rew in get_transitions((r,c), ai, stochastic)) for ai in range(8)]
+                new_policy[r,c] = np.argmax(v_actions)
+                if new_policy[r,c] != policy[r,c]:
+                    stable = False
+        policy = new_policy
+        if stable: break
+    return V, policy, total_iters
+
 # --- Plotting Functions ---
 
 def plot_value_function_only(V, title):
@@ -113,3 +150,16 @@ V_sto, P_sto, it_sto = value_iteration(stochastic=True)
 print(f"Stochastic converged in {it_sto} iterations.")
 plot_value_function_only(V_sto, "Stochastic Model")  
 plot_optimal_policy(V_sto, P_sto, "Stochastic Model (b)")
+
+# Policy Iteration
+# Deterministic Model
+V_det_pi, P_det_pi, it_det_pi = policy_iteration(stochastic=False)
+print(f"Deterministic Policy Iteration converged in {it_det_pi} iterations.")
+plot_value_function_only(V_det_pi, "Deterministic Model (Policy Iteration)")  
+plot_optimal_policy(V_det_pi, P_det_pi, "Deterministic Model (Policy Iteration)")
+
+# Stochastic Model
+V_sto_pi, P_sto_pi, it_sto_pi = policy_iteration(stochastic=True)
+print(f"Stochastic Policy Iteration converged in {it_sto_pi} iterations.")
+plot_value_function_only(V_sto_pi, "Stochastic Model (Policy Iteration)")  
+plot_optimal_policy(V_sto_pi, P_sto_pi, "Stochastic Model (Policy Iteration)")
