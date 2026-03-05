@@ -172,7 +172,7 @@ def main():
     draw_grid(ax_grid1, sarsa_path_fixed, q_path_fixed,
               f'Learned Paths — Fixed ε={EPS}\n(SARSA safe, Q-learn optimal)')
     draw_grid(ax_grid2, sarsa_path_decay, q_path_decay,
-              f'Learned Paths — Decaying ε\n(both converge to optimal)')
+              f'Learned Paths — Decaying ε')
 
     # Row 1: reward curves fixed eps
     ax_r1 = fig.add_subplot(gs[1, :])
