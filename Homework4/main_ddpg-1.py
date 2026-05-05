@@ -110,10 +110,16 @@ if __name__ == '__main__':
     memory = ReplayBuffer(1000000, env.observation_space.shape[0], env.action_space.shape[0])
     writer = SummaryWriter(log_dir="./logs/ddpg")
     for i in range(1000):
-        obs, score, done = env.reset(), 0, False
+        obs, info = env.reset() # This extracts just the array into 'obs'
+        score = 0
+        done = False
         while not done:
             action = agent.choose_action(obs)
-            obs_, reward, done, _ = env.step(action)
+            # Unpack the 5 values: observation, reward, terminated, truncated, info
+            obs_, reward, terminated, truncated, info = env.step(action)
+
+            # Combine terminated and truncated for your ReplayBuffer logic
+            done = terminated or truncated
             memory.store_transition(obs, action, reward, obs_, done)
             agent.learn(memory, 64)
             obs, score = obs_, score + reward
