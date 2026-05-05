@@ -1,0 +1,21 @@
+# RL Exercise #4 — Dependencies
+# Tested with Python 3.10+
+
+# Core RL environment
+gym==0.26.2
+box2d-py==2.3.5          # LunarLander physics engine
+pygame==2.5.2            # render_mode="human" support
+
+# Deep learning
+torch==2.2.0             # GPU (CUDA) or CPU
+torchvision==0.17.0
+
+# Numerical / utilities
+numpy==1.26.4
+
+# Logging / visualisation
+tensorboard==2.16.2
+
+# Optional: newer gymnasium API (uncomment if you prefer gymnasium over gym)
+# gymnasium==0.29.1
+# gymnasium[box2d]==0.29.1
