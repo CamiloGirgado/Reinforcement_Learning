@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import gymnasium as gym
+import matplotlib.pyplot as plt
+from copy import deepcopy
 from torch.utils.tensorboard import SummaryWriter
 
 class ReplayBuffer:
@@ -44,7 +46,7 @@ class ActorNetwork(nn.Module):
     def forward(self, state):
         x = F.relu(self.fc1(state))
         x = F.relu(self.fc2(x))
-        return torch.tanh(self.mu(x)) # Bound actions to [-1, 1][cite: 1]
+        return torch.tanh(self.mu(x)) # Bound actions to [-1, 1]
 
 class CriticNetwork(nn.Module):
     def __init__(self, beta, state_dim, n_actions):
@@ -71,12 +73,12 @@ class DDPGAgent:
 
     def choose_action(self, observation):
         self.actor.eval()
-        # Convert to numpy array first to avoid the PyTorch performance warning
+        # Fixed list-tensor conversion performance bottleneck
         state = torch.tensor(np.array([observation]), dtype=torch.float).to(self.actor.device)
         mu = self.actor(state).detach()
-        noise = torch.randn_like(mu) * 0.1 
+        noise = torch.randn_like(mu) * 0.1 # Exploration noise
         action = (mu + noise).cpu().numpy()[0]
-        return np.clip(action, -1, 1)
+        return np.clip(action, -1, 1) # Engine clipping
 
     def learn(self, memory, batch_size):
         if memory.mem_cntr < batch_size: return
@@ -97,31 +99,55 @@ class DDPGAgent:
         actor_loss = -self.critic(s, self.actor(s)).mean()
         self.actor.optimizer.zero_grad(); actor_loss.backward(); self.actor.optimizer.step()
 
-        # Soft update[cite: 1]
+        # Soft update
         for target, param in zip(self.target_actor.parameters(), self.actor.parameters()):
             target.data.copy_(self.tau * param.data + (1 - self.tau) * target.data)
         for target, param in zip(self.target_critic.parameters(), self.critic.parameters()):
             target.data.copy_(self.tau * param.data + (1 - self.tau) * target.data)
 
+
 if __name__ == '__main__':
-    from copy import deepcopy
     env = gym.make('LunarLanderContinuous-v3')
     agent = DDPGAgent(env.observation_space.shape[0], env.action_space.shape[0])
     memory = ReplayBuffer(1000000, env.observation_space.shape[0], env.action_space.shape[0])
     writer = SummaryWriter(log_dir="./logs/ddpg")
-    for i in range(1000):
-        obs, info = env.reset() # This extracts just the array into 'obs'
+    
+    n_episodes = 1000
+    score_history = []
+
+    for i in range(n_episodes):
+        obs, info = env.reset()
         score = 0
         done = False
+        
         while not done:
             action = agent.choose_action(obs)
-            # Unpack the 5 values: observation, reward, terminated, truncated, info
             obs_, reward, terminated, truncated, info = env.step(action)
-
-            # Combine terminated and truncated for your ReplayBuffer logic
             done = terminated or truncated
+            
             memory.store_transition(obs, action, reward, obs_, done)
             agent.learn(memory, 64)
-            obs, score = obs_, score + reward
+            
+            obs = obs_
+            score += reward
+            
+        score_history.append(score)
+        avg_score = np.mean(score_history[-100:])
         writer.add_scalar("Reward", score, i)
-        print(f"Episode: {i}, Score: {score}")
+        print(f"Episode: {i}, Score: {score:.2f}, Avg Score (100 ep): {avg_score:.2f}")
+
+    # Plotting Performance
+    plt.figure(figsize=(10, 6))
+    running_avg = np.zeros(len(score_history))
+    for i in range(len(running_avg)):
+        running_avg[i] = np.mean(score_history[max(0, i-100):(i+1)])
+        
+    plt.plot(score_history, alpha=0.3, label='Raw Episode Score')
+    plt.plot(running_avg, color='blue', linewidth=2, label='100-Episode Moving Avg')
+    plt.axhline(y=100, color='green', linestyle='--', label='Success Target (>= 100)')
+    plt.title('DDPG Learning Curve - LunarLanderContinuous-v3')
+    plt.xlabel('Episodes')
+    plt.ylabel('Total Reward')
+    plt.legend()
+    plt.savefig('ddpg_learning_curve.png')
+    plt.show()
